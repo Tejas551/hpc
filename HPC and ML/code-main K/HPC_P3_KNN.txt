@@ -1,0 +1,121 @@
+import pandas as pd
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+import concurrent.futures
+
+
+
+
+# Read the CSV file
+df = pd.read_csv("Iris.csv")
+
+
+
+
+df.head()
+
+
+
+
+df.info()
+
+
+
+
+# Check for missing values
+df.isnull().sum()
+
+
+
+
+
+# Perform label encoding on the 'Species' column
+le = LabelEncoder()
+df['Species'] = le.fit_transform(df['Species'])
+
+# Display the unique encoded values of 'Species'
+df['Species'].unique()
+
+
+
+
+
+
+# Separate the features (x) and the target variable (y)
+x = df.drop(['Species'], axis=1)
+y = df[['Species']]
+
+# Display the first few rows of the features (x)
+x.head()
+
+
+
+
+
+y.head()
+
+
+
+
+# Split the data into training and testing sets
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=10)
+
+# Display the last few rows of the features (x)
+x.tail()
+
+
+
+
+
+# Select a test data point
+text = x.iloc[149]
+text
+
+
+
+
+# Create a list of tuples for parallel processing
+l = [(x.iloc[:30, :], y.iloc[:30], text),
+     (x.iloc[30:60, :], y.iloc[30:60], text),
+     (x.iloc[60:90, :], y.iloc[60:90], text),
+     (x.iloc[90:120, :], y.iloc[90:120], text),
+     (x.iloc[120:149, :], y.iloc[120:149], text)]
+
+
+
+
+
+
+# Define the neighbour function for KNN
+def neighbour(i):
+    x_train, y_train, x_test = i
+    knn = KNeighborsClassifier(n_neighbors=5)
+    knn.fit(x_train, y_train)
+    return knn.predict([x_test])
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+
+# Perform parallel processing using ThreadPoolExecutor
+def main1():
+    predictions = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        results = executor.map(neighbour, l)
+        for i in results:
+            print(i)
+
+
+
+
+
+main1()
+
+
+
+

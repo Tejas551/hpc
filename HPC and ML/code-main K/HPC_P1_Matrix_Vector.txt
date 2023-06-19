@@ -1,0 +1,85 @@
+#include <iostream>
+#include <vector>
+#include <omp.h>
+
+using namespace std;
+
+// Function to add two vectors in parallel
+vector<int> addVectors(const vector<int>& v1, const vector<int>& v2) {
+    vector<int> result(v1.size());
+    
+    #pragma omp parallel for
+    for (int i = 0; i < v1.size(); i++) {
+        result[i] = v1[i] + v2[i];
+    }
+    
+    return result;
+}
+
+// Function to multiply a vector with a matrix in parallel
+vector<int> multiplyVectorMatrix(const vector<int>& v, const vector<vector<int>>& m) {
+    vector<int> result(m[0].size());
+    
+    #pragma omp parallel for
+    for (int i = 0; i < m[0].size(); i++) {
+        int sum = 0;
+        for (int j = 0; j < v.size(); j++) {
+            sum += v[j] * m[j][i];
+        }
+        result[i] = sum;
+    }
+    
+    return result;
+}
+
+// Function to multiply two matrices in parallel
+vector<vector<int>> multiplyMatrices(const vector<vector<int>>& m1, const vector<vector<int>>& m2) {
+    vector<vector<int>> result(m1.size(), vector<int>(m2[0].size()));
+    
+    #pragma omp parallel for
+    for (int i = 0; i < m1.size(); i++) {
+        for (int j = 0; j < m2[0].size(); j++) {
+            int sum = 0;
+            for (int k = 0; k < m1[0].size(); k++) {
+                sum += m1[i][k] * m2[k][j];
+            }
+            result[i][j] = sum;
+        }
+    }
+    
+    return result;
+}
+
+int main() {
+    vector<int> v1 = {1, 2, 3};
+    vector<int> v2 = {4, 5, 6};
+    vector<vector<int>> matrix = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    
+
+    
+    // Print the results
+    cout << "Vector Addition: " << endl;
+    vector<int> sum = addVectors(v1, v2);    
+    for (int value : sum) {
+        cout << value << " ";
+    }
+    cout << endl << endl;
+    
+    cout << "Matrix-Vector Multiplication: " << endl;
+    vector<int> product = multiplyVectorMatrix(v1, matrix);
+    for (int value : product) {
+        cout << value << " ";
+    }
+    cout << endl << endl;
+    
+    cout << "Matrix-Matrix Multiplication: " << endl;
+    vector<vector<int>> matrixProduct = multiplyMatrices(matrix, matrix);
+    for (const auto& row : matrixProduct) {
+        for (int value : row) {
+            cout << value << " ";
+        }
+        cout << endl;
+    }
+    
+    return 0;
+}
